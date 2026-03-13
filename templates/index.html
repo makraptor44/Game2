@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Edge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- LOBBY -->
+  <div id="screen-lobby" class="screen active">
+    <div class="lobby-bg"></div>
+    <div class="lobby-center">
+      <div class="logo-block">
+        <span class="logo-chip">ME</span>
+        <h1 class="logo-title">Market<br/>Edge</h1>
+        <p class="logo-sub">A real-time news and pricing game</p>
+      </div>
+
+      <div class="card-panel" id="panel-entry">
+        <div class="tab-row">
+          <button class="tab-btn active" data-tab="join">Join Game</button>
+          <button class="tab-btn" data-tab="create">Host Game</button>
+        </div>
+
+        <div class="tab-pane active" id="tab-join">
+          <label class="field-label">Your Name</label>
+          <input class="field-input" id="join-name" placeholder="e.g. Alice" maxlength="20" />
+          <label class="field-label">Game Code</label>
+          <input class="field-input" id="join-code" placeholder="e.g. a3f9c12b" maxlength="8" />
+          <button class="btn-primary" id="btn-join">Join →</button>
+        </div>
+
+        <div class="tab-pane" id="tab-create">
+          <label class="field-label">Your Name (Host)</label>
+          <input class="field-input" id="create-name" placeholder="e.g. Host" maxlength="20" />
+          <label class="field-label">Rounds</label>
+          <input class="field-input" id="cfg-rounds" type="number" value="5" min="1" max="20" />
+          <button class="btn-primary" id="btn-create">Create Game →</button>
+        </div>
+
+        <div class="error-msg" id="lobby-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WAITING ROOM -->
+  <div id="screen-waiting" class="screen">
+    <div class="top-bar">
+      <span class="game-code-label">GAME CODE</span>
+      <span class="game-code-value" id="waiting-code">——</span>
+    </div>
+
+    <div class="waiting-center">
+      <h2 class="waiting-title">Waiting for players</h2>
+      <p class="waiting-sub">Share the game code above</p>
+      <div class="player-grid" id="waiting-players"></div>
+      <button class="btn-primary hidden" id="btn-start">Start Game →</button>
+      <p class="waiting-hint" id="waiting-hint">Waiting for host to start…</p>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-left">
+        <span class="hud-label">ROUND</span>
+        <span class="hud-value" id="hud-round">—</span>
+        <span class="hud-sep">/</span>
+        <span class="hud-value" id="hud-rounds-total">—</span>
+      </div>
+      <div class="hud-center">
+        <span class="hud-phase" id="hud-phase">—</span>
+      </div>
+      <div class="hud-right">
+        <span class="hud-label">BANKROLL</span>
+        <span class="hud-value accent" id="hud-cash">£0.00</span>
+        <span class="hud-label ml">POS</span>
+        <span class="hud-value" id="hud-pos">0</span>
+      </div>
+    </div>
+
+    <div class="timer-track">
+      <div class="timer-fill" id="timer-fill"></div>
+    </div>
+
+    <!-- PHASE 1 REVEAL -->
+    <div class="game-panel" id="panel-phase1-reveal">
+      <h2 class="panel-title">Phase 1</h2>
+      <p class="panel-sub">Initial cards are revealed, then the market freezes after news.</p>
+
+      <div class="cards-row" id="phase1-cards"></div>
+
+      <div class="market-grid">
+        <div class="market-box">
+          <span class="market-label">Market Before News</span>
+          <div class="market-value" id="phase1-market-pre">—</div>
+        </div>
+        <div class="market-box">
+          <span class="market-label">Frozen Market Price</span>
+          <div class="market-value" id="phase1-market-frozen">—</div>
+        </div>
+      </div>
+
+      <div class="news-wrap">
+        <div class="news-section-title">Persistent Deck News</div>
+        <div class="news-list" id="phase1-deck-news"></div>
+
+        <div class="news-section-title">Current Phase News</div>
+        <div class="news-list" id="phase1-news"></div>
+      </div>
+    </div>
+
+    <!-- PHASE 1 TRADE -->
+    <div class="game-panel hidden" id="panel-phase1-trade">
+      <h2 class="panel-title">Trade — Phase 1</h2>
+      <p class="panel-sub">Buy, sell, or pass at the frozen phase 1 market price.</p>
+
+      <div class="cards-row" id="trade1-cards"></div>
+
+      <div class="news-wrap">
+        <div class="news-section-title">Persistent Deck News</div>
+        <div class="news-list" id="trade1-deck-news"></div>
+
+        <div class="news-section-title">Current Phase News</div>
+        <div class="news-list" id="trade1-news"></div>
+      </div>
+
+      <div class="trade-box">
+        <div class="market-label">Frozen Market Price</div>
+        <div class="big-price" id="trade1-price">—</div>
+
+        <div class="qty-row">
+          <label class="field-label">Quantity</label>
+          <input class="field-input" id="trade1-qty" type="number" value="1" min="1" max="20" />
+        </div>
+
+        <div class="action-btns">
+          <button class="btn-sell" id="btn-sell-1">SELL</button>
+          <button class="btn-pass" id="btn-pass-1">PASS</button>
+          <button class="btn-buy" id="btn-buy-1">BUY</button>
+        </div>
+
+        <div class="error-msg" id="trade1-error"></div>
+      </div>
+    </div>
+
+    <!-- PHASE 1 ACTED -->
+    <div class="game-panel hidden" id="panel-phase1-acted">
+      <div class="check-icon">✓</div>
+      <h2 class="panel-title">Phase 1 submitted</h2>
+      <p class="panel-sub">Waiting for other players…</p>
+      <div class="acted-status" id="phase1-acted-status"></div>
+    </div>
+
+    <!-- PHASE 2 REVEAL -->
+    <div class="game-panel hidden" id="panel-phase2-reveal">
+      <h2 class="panel-title">Phase 2</h2>
+      <p class="panel-sub">The fourth card is revealed. Phase 1 news still applies.</p>
+
+      <div class="cards-row" id="phase2-cards"></div>
+
+      <div class="market-grid">
+        <div class="market-box">
+          <span class="market-label">Market Before New News</span>
+          <div class="market-value" id="phase2-market-pre">—</div>
+        </div>
+        <div class="market-box">
+          <span class="market-label">Frozen Market Price</span>
+          <div class="market-value" id="phase2-market-frozen">—</div>
+        </div>
+      </div>
+
+      <div class="news-wrap">
+        <div class="news-section-title">Persistent Deck News</div>
+        <div class="news-list" id="phase2-deck-news"></div>
+
+        <div class="news-section-title">Active Phase News</div>
+        <div class="news-list" id="phase2-news"></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 TRADE -->
+    <div class="game-panel hidden" id="panel-phase2-trade">
+      <h2 class="panel-title">Trade — Phase 2</h2>
+      <p class="panel-sub">Trade again at the new frozen market price.</p>
+
+      <div class="cards-row" id="trade2-cards"></div>
+
+      <div class="news-wrap">
+        <div class="news-section-title">Persistent Deck News</div>
+        <div class="news-list" id="trade2-deck-news"></div>
+
+        <div class="news-section-title">Active Phase News</div>
+        <div class="news-list" id="trade2-news"></div>
+      </div>
+
+      <div class="trade-box">
+        <div class="market-label">Frozen Market Price</div>
+        <div class="big-price" id="trade2-price">—</div>
+
+        <div class="qty-row">
+          <label class="field-label">Quantity</label>
+          <input class="field-input" id="trade2-qty" type="number" value="1" min="1" max="20" />
+        </div>
+
+        <div class="action-btns">
+          <button class="btn-sell" id="btn-sell-2">SELL</button>
+          <button class="btn-pass" id="btn-pass-2">PASS</button>
+          <button class="btn-buy" id="btn-buy-2">BUY</button>
+        </div>
+
+        <div class="error-msg" id="trade2-error"></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 ACTED -->
+    <div class="game-panel hidden" id="panel-phase2-acted">
+      <div class="check-icon">✓</div>
+      <h2 class="panel-title">Phase 2 submitted</h2>
+      <p class="panel-sub">Waiting for other players…</p>
+      <div class="acted-status" id="phase2-acted-status"></div>
+    </div>
+
+    <!-- ELIMINATED -->
+    <div class="game-panel hidden" id="panel-eliminated">
+      <div class="elim-box">
+        <h2 class="panel-title">Eliminated</h2>
+        <p class="panel-sub">Your bankroll has dropped to zero or below.</p>
+        <div class="elim-value" id="elim-cash">£0.00</div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="game-panel hidden" id="panel-results">
+      <div class="results-header">
+        <div class="results-title-row">
+          <h2 class="panel-title" id="results-title">Round Results</h2>
+          <div class="true-value-pill">
+            True Value <span id="results-true-value">—</span>
+          </div>
+        </div>
+        <div class="results-context" id="results-context"></div>
+      </div>
+
+      <div class="news-wrap">
+        <div class="news-section-title">Persistent Deck News</div>
+        <div class="news-list" id="results-deck-news"></div>
+      </div>
+
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Phase 1</th>
+            <th>Phase 2</th>
+            <th>Round</th>
+            <th>Bankroll</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+
+      <p class="next-round-msg" id="next-round-msg">Next round starting soon…</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+
