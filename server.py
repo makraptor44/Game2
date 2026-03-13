@@ -252,4 +252,4 @@ if __name__ == "__main__":
     print(f"Starting Market Edge on {host}:{port}")
     print(f"News rules loaded: {len(NEWS_ENGINE.rules)}")
     print(f"News rows skipped: {len(NEWS_ENGINE.skipped_rows)}")
-    socketio.run(app, host=host, port=port, debug=True)
+    socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
